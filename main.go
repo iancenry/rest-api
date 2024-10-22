@@ -4,18 +4,31 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"github.com/gorilla/mux"
+	"github.com/iancenry/go-rest-api/database"
 	"github.com/iancenry/go-rest-api/handler"
 	"github.com/iancenry/go-rest-api/middleware"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
+
+var db *pgxpool.Pool
 
 func main() {
 	err := godotenv.Load()
 	if err != nil {
 	  log.Fatal("Error loading .env file")
 	}
+	PORT := os.Getenv("PORT")
+	if PORT == "" {
+		PORT = "8080"
+	}
+
+	db = database.ConnectDB()
+	defer db.Close()
+
 	
 	router := *mux.NewRouter()
 
@@ -26,7 +39,7 @@ func main() {
 	router.HandleFunc("/books/{id}", handler.GetBook).Methods("GET")
 	router.Handle("/books", middleware.IsAuthenticated(http.HandlerFunc(handler.AddBook))).Methods("POST")
 
-	fmt.Println("Server running on port 8080")
-	log.Fatal(http.ListenAndServe(":8080", &router))
+	fmt.Printf("Starting server on port %s...\n", PORT)
+	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", PORT), &router))
 
 }
