@@ -43,3 +43,4 @@ func main() {
 	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", PORT), &router))
 
 }
+// https://dev.to/neelp03/connecting-your-go-api-to-a-postgresql-database-39
